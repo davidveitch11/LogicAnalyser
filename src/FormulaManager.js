@@ -4,14 +4,34 @@ import {FormulaContext} from './Contexts';
 import antlr4 from 'antlr4';
 import { LogicLexer, LogicParser, MyLogicListener } from './parser';
 
+/**
+ * Component responsible for managing the formula.
+ * It will render as any children it is given.
+ * It will provide a context with the text and tree representation of the formula
+ * as well as any error strings and a method for setting a new string formula.
+ * When a new formula is set, it will parse it and store the new tree representation.
+ */
 function FormulaManager({children}) {
+    // String representation of the formula
     const [formula, formulaSetter] = useState("");
+    // Tree representation of the same formula (if available)
     const [tree, treeSetter] = useState(null);
+    // Error string if parsing failed
     const [error, errorSetter] = useState(null)
 
     const setFormula = formula => {
+        // Save the string representation
         formulaSetter(formula)
+
+        // Remove previous errors
         errorSetter(null)
+
+        if (formula == "") {
+            treeSetter(null)
+            return;
+        }
+
+        // Attempt to parse the new string formula and save the resultant tree/errors
         const newTree = getTree(formula, errorSetter)
         treeSetter(newTree)
     }
@@ -25,6 +45,10 @@ function FormulaManager({children}) {
     );
 }
 
+/**
+ * Class responsible for directing error messages away from the console and to
+ * this program's method for reporting errors
+ */
 class ErrorListener extends antlr4.error.ErrorListener {
     constructor(onError) {
         super()
@@ -38,22 +62,33 @@ class ErrorListener extends antlr4.error.ErrorListener {
     }
 }
 
+/**
+ * Attempt to parse the string formula given using the parser, returning the
+ * tree representation as parser/FormulaTreeNode objects.
+ * On error the second argument will be given an error string and null will
+ * be returned.
+ */
 function getTree(formula, onError) {
+    // Setup parser
     const lexer = new LogicLexer(new antlr4.InputStream(formula))
     const parser = new LogicParser(new antlr4.CommonTokenStream(lexer))
     parser.buildParseTrees = true;
 
+    // Setup method for handling errors
     const errorListener = new ErrorListener(onError)
-
     parser.removeErrorListeners();
     parser.addErrorListener(errorListener);
 
+    // Attempt to parse the formula
     const buildTree = parser.formula()
 
+    // Check for errors
     if (errorListener.hadError) {
         return null;
     }
 
+    // Convert the parser's build tree into a FormulaTree representation using
+    // this program's listener class
     const listener = new MyLogicListener()
     antlr4.tree.ParseTreeWalker.DEFAULT.walk(listener, buildTree);
     return listener.getTree();
