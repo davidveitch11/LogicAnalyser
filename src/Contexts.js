@@ -10,7 +10,8 @@ const FormulaContext = React.createContext(
         formula: "",
         setFormula: () => {},
         tree : null,
-        error: null
+        error: null,
+        cnf: null
     }
 );
 

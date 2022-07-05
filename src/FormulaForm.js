@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import { FormulaContext } from "./Contexts";
+import FormulaDisplay from "./FormulaDisplay";
 
 /**
  * Form used to enter a new formula into the system.
@@ -18,7 +19,9 @@ function FormulaForm() {
         setFormula(value)
     }
 
-    return (
+    return <div id="formula-input">
+        <h2>Formula Input</h2>
+
         <form onSubmit={handleSubmit}>
             <label>
                 Formula:
@@ -29,7 +32,10 @@ function FormulaForm() {
             </label>
             <input type="submit" value="Submit" />
         </form>
-    )
+
+        {/* Something to display the raw formula as parsed */}
+        <FormulaDisplay />
+    </div>
 }
 
 export default FormulaForm;

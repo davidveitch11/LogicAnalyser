@@ -18,7 +18,7 @@ function FormulaDisplay() {
         return <p>No Formula Entered</p>
     }
 
-    return <p>Formula as Parsed: {tree.toString()}</p>
+    return <p>Check the formula has parsed correctly: {tree.toString()}</p>
 }
 
 export default FormulaDisplay;
