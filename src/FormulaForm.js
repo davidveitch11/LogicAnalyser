@@ -22,6 +22,9 @@ function FormulaForm() {
     return <div id="formula-input">
         <h2>Formula Input</h2>
 
+        <p>Input your formula in propositional calculus in the form below and
+            check that it has parsed correctly using the display underneath</p>
+
         <form onSubmit={handleSubmit}>
             <label>
                 Formula:

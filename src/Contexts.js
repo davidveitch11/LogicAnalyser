@@ -11,7 +11,8 @@ const FormulaContext = React.createContext(
         setFormula: () => {},
         tree : null,
         error: null,
-        cnf: null
+        cnf: null,
+        dpll: null
     }
 );
 

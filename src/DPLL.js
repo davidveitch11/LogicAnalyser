@@ -1,131 +1,56 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { FormulaContext } from "./Contexts";
+import WhatIsThisBtn from "./WhatIsThisBtn";
 
+/**
+ * This component will display the results of DPLL analysis on the formula parsed.
+ * See DPLLCalculations for details
+ */
 function DPLL() {
-    const {cnf} = useContext(FormulaContext)
-    const [out, outSetter] = useState([])
+    const {dpll} = useContext(FormulaContext)
 
-    if (!cnf) {
-        if (out.length > 0) {
-            outSetter([])
-        }
-
-        return null
-    }
-
-    const recalculate = () => {
-        const newOut = []
-        const print = line => {
-            newOut.push(line)
-        }
-
-        const {result, assignment} = doDPLL(cnf, print)
-
-        if (result) {
-            print("Formula is satisfied by " + assignment)
-        } else {
-            print("Formula is unsatisfiable")
-        }
-        outSetter(newOut)
+    // Dont display if nothing available
+    if (!dpll) {
+        return null;
     }
 
     return (
         <div id="dpll">
             <h2>DPLL analysis</h2>
-            <button type="button" onClick={recalculate}>Perform DPLL</button>
-            {out.map((line, i) => <p key={"line" + i}>{line}</p>)}
+
+            {/* Explain to user what this does */}
+            <WhatIsThisBtn>
+                <p>
+                    DPLL is an algorithm for determining if a proposition is
+                    satisfiable and finding and least one satisfying assignment.
+                </p>
+                <p>
+                    The first step is to convert the formula to CNF (see above).
+                    Once this has been done DPLL performs 'unit propagation' as
+                    far as it can. This involves finding a 'unit' - a clause
+                    containing just on literal so that any assignment must have
+                    literal be true - and removing any clause containing the same
+                    literal - since the literal is true, the clause is satisfied -
+                    and removing the negation of the literal from anywhere else - 
+                    since it will be false, it cannot satisfy those clauses.
+                </p>
+                <p>
+                    If there are no units, one must be chosen by selecting a random
+                    literal and assuming it is true, propagating it and continuing
+                    to see if an assignment can be found, and backtracking and
+                    choosing a different literal otherwise.
+                </p>
+                <p>
+                    If the formula is emptied - no more clauses - then it is satisfied.
+                    If the formula contains an empty clause then no assignment will
+                    satisfy it, so the formula is unsatisfiable.
+                </p>
+            </WhatIsThisBtn>
+
+            {/* Display the lines of text in DPLL as rows */}
+            {dpll.map((line, i) => <p key={"line" + i}>{line}</p>)}
         </div>
     );
-}
-
-function doDPLL(cnf, print) {
-    print("Starting iteration with CNF: " + cnfToString(cnf))
-
-    // Check for exit condition
-    if (cnf.length === 0) {
-        print("Found empty formula (satisfied)")
-        return {result: true, assignment: []}
-    }
-    if (cnf.some(clause => clause.length === 0)) {
-        print("Found empty clause (contradiction)")
-        return {result: false, assignment: []}
-    }
-
-    // Make copy of objects
-    let newCNF = cnf.map(clause => [...clause])
-
-    // Find unit clause (or null if no clauses are units)
-    const [unit] = newCNF.find(clause => clause.length === 1) || [null]
-
-    if (!unit) {
-        // Without a unit clause, take a random guess
-
-        print("No unit clauses found");
-
-        let found = false;
-        let ret = {result: false, assignment: []};
-
-        cnf.forEach(clause => clause.forEach(literal => {
-            if (found) {
-                return;
-            }
-
-            print("Guess using literal " + literal.toString() + " from clause {" + clause.join(",") + "}")
-
-            // Use literal as the unit
-            const nCNF = propagateUnit(newCNF, literal, print)
-
-            const {result, assignment} = doDPLL(nCNF, print)
-            if (result) {
-                found = true;
-                ret = {result, assignment: [...assignment, literal]}
-                return;
-            }
-
-            print("Backtracking literal " + literal.toString() + " from clause {" + clause.join(",") + "}")
-        }))
-
-        return ret;
-    }
-
-    // With a unit clause, perform propagation
-
-    newCNF = propagateUnit(newCNF, unit, print);
-
-    // const strings = newCNF.map(clause => "{" + clause.join(",") + "}")
-    // lines.push(str, "new CNF: " + strings.join(" "))
-
-    const {result, assignment} = doDPLL(newCNF, print)
-    return {result, assignment: [...assignment, unit]}
-}
-
-function propagateUnit(cnf, unit, print) {
-    // Remove clauses with literals which match the unit
-    let removedClauses = cnf.filter(clause => clause.some(literal => literal.matches(unit) === 1))
-
-    // Remove literals which match the unit's inverse from clauses
-    let removedLiterals = cnf.filter(clause => clause.some(literal => literal.matches(unit) === -1))
-
-    print(
-        "propagating unit: " + unit.toString()
-        + "; "
-        + "removed " + removedClauses.length
-        + " clause(s): " + cnfToString(removedClauses)
-        + "; "
-        + "removed unit from " + removedLiterals.length
-        + " clause(s): " + cnfToString(removedLiterals)
-    )
-
-    // Perform removals
-    cnf = cnf.filter(clause => !clause.some(literal => literal.matches(unit) === 1))
-    cnf = cnf.map(clause => clause.filter(literal => literal.matches(unit) === 0))
-
-    return cnf
-}
-
-function cnfToString(cnf) {
-    const strings = cnf.map(clause => "{" + clause.join(",") + "}")
-    return strings.join(" ")
 }
 
 export default DPLL;

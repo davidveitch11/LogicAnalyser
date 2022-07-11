@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {FormulaContext} from './Contexts';
 import antlr4 from 'antlr4';
 import { LogicLexer, LogicParser, MyLogicListener } from './parser';
+import { recalculateDPLL } from './DPLLCalculations';
 
 /**
  * Component responsible for managing the formula.
@@ -21,6 +22,8 @@ function FormulaManager({children}) {
     const [error, errorSetter] = useState(null)
     // CNF representation of the formula (if available)
     const [cnf, cnfSetter] = useState(null)
+    // Strings from the calculation using DPLL
+    const [dpll, dpllSetter] = useState(null)
 
     const setFormula = formula => {
         // Save the string representation
@@ -32,6 +35,7 @@ function FormulaManager({children}) {
         if (formula === "") {
             treeSetter(null)
             cnfSetter(null)
+            dpllSetter(null)
             return;
         }
 
@@ -46,9 +50,13 @@ function FormulaManager({children}) {
         // Convert the tree into CNF
         const cnfRep = newTree.copy().toCNF()
         cnfSetter(cnfRep)
+
+        // Use DPLL and collect the information strings
+        const dpllStrings = recalculateDPLL(cnfRep)
+        dpllSetter(dpllStrings)
     }
 
-    const value = {formula, setFormula, tree, error, cnf}
+    const value = {formula, setFormula, tree, error, cnf, dpll}
 
     return (
         <FormulaContext.Provider value={value}>

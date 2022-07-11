@@ -1,10 +1,27 @@
 import { useContext } from "react";
 import { FormulaContext } from "./Contexts";
+import WhatIsThisBtn from "./WhatIsThisBtn";
 
 // The maximum number of (different) propositions that can be used before the
 // number of possible assignments grows too large.
 // Set to five, at most 32 (i.e., 2^5) assignments can be given.
 const MAX_TABLE = 5;
+
+function TruthTable() {
+    return <div id="truth-table">
+        <h2>Truth Table</h2>
+
+        <WhatIsThisBtn>
+            <p>
+                The truth table shows all possible assignments for the propositional
+                variables in the formula and the evaluation of the formula using these
+                assignments.
+            </p>
+        </WhatIsThisBtn>
+
+        <TruthTableInner />
+    </div>
+}
 
 /**
  * Component for showing the truth table for a given formula tree.
@@ -16,7 +33,7 @@ const MAX_TABLE = 5;
  * If there are no propositions, there will be just one evaluation, so no table is
  * shown.
  */
-function TruthTable() {
+function TruthTableInner() {
     const {tree} = useContext(FormulaContext)
 
     // Don't display if no formula available
