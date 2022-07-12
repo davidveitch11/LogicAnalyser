@@ -44,6 +44,8 @@ function FormulaManager({children}) {
         treeSetter(newTree)
 
         if (newTree === null) {
+            cnfSetter(null)
+            dpllSetter(null)
             return;
         }
 

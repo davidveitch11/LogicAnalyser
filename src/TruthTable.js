@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { FormulaContext } from "./Contexts";
 import WhatIsThisBtn from "./WhatIsThisBtn";
 
@@ -35,6 +35,7 @@ function TruthTable() {
  */
 function TruthTableInner() {
     const {tree} = useContext(FormulaContext)
+    const [showLonger, setShowLonger] = useState(false)
 
     // Don't display if no formula available
     if (!tree) {
@@ -52,9 +53,8 @@ function TruthTableInner() {
     }
 
     // If there are too many props, this cannot be displayed
-    if (props.length > MAX_TABLE) {
-        return <p>No truth table as no more than {MAX_TABLE}
-            &nbsp;different propositions can be used in the formula</p>
+    if (!showLonger && props.length > MAX_TABLE) {
+        return <Disclaimer setShowLonger={setShowLonger} />
     }
 
     // Get an array of assignments (each of which is an array of booleans) and
@@ -69,6 +69,30 @@ function TruthTableInner() {
                 {assignments.map((a, i) => <TableRow assignment={a} key={"tr" + i} />)}
             </tbody>
         </table>
+    )
+}
+
+/**
+ * Disclaimer shown if there are too many rows in the table.
+ * Offers a button which will allow more rows to be shown
+ */
+function Disclaimer({setShowLonger}) {
+    return (
+        <div id="disclaimer">
+            <p>
+                The truth table cannot be displayed as no more than {MAX_TABLE}
+                &nbsp;different propositions can be used in the formula. This
+                would make the table exponentially longer and could slow down
+                your computer.
+            </p>
+            <p>
+                Click this button to confirm you understand this and will allow
+                the truth table to display with more rows.
+            </p>
+            <button type="button" onClick={() => setShowLonger(true)}>
+                Show Long Table
+            </button>
+        </div>
     )
 }
 
